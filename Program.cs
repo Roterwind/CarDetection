@@ -1,11 +1,12 @@
 ﻿using System;
 using OpenCvSharp;
+using OpenCvSharp.Blob;
 
 namespace CarDetection
 {
 	class Program
 	{
-		public const String FILE_NAME = "merged_night.avi";
+		public const String FILE_NAME = "merged_day.avi";
 		public const String MAIN_WINDOW_NAME = "main";
 
 		static void Main(string[] args)
@@ -45,7 +46,7 @@ namespace CarDetection
 				}
 
 				counter++;
-				if (counter % 5 != 0)
+				if (counter % 3 != 0)
 					continue;
 
 				//algo
@@ -59,7 +60,21 @@ namespace CarDetection
 				Cv.Threshold(differenceBetweenFrames, differenceBetweenFrames, 10, 255, ThresholdType.Binary);
 				Cv.Erode(differenceBetweenFrames, differenceBetweenFrames);
 
-				Cv.ShowImage(MAIN_WINDOW_NAME, currentOgirinalFrame);
+				//finding blobs
+				CvBlobs blobs = new CvBlobs(differenceBetweenFrames);
+				blobs.FilterByArea(300, 10000);
+				//blobs.Label(differenceBetweenFrames);
+
+				var currentFrameWithRedRects = Cv.CreateImage(currentOgirinalFrame.Size, currentOgirinalFrame.Depth, currentOgirinalFrame.NChannels);
+				currentOgirinalFrame.Copy(currentFrameWithRedRects);
+				foreach (var cvBlob in blobs)
+				{
+					Cv.Rectangle(currentFrameWithRedRects, cvBlob.Value.Rect, CvColor.Red, 4);
+				}
+
+				Console.WriteLine(blobs.Count);
+
+				Cv.ShowImage(MAIN_WINDOW_NAME, currentFrameWithRedRects);
 				Cv.ShowImage("Result", differenceBetweenFrames);
 				Cv.WaitKey(delay * 4);
 
