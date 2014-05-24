@@ -4,9 +4,9 @@ using OpenCvSharp.Blob;
 
 namespace CarDetection
 {
-	class Program
+	class SubtractionMethod
 	{
-		public const String FILE_NAME = "merged_day.avi";
+		public const String FILE_NAME = "better_video.mp4";
 		public const String MAIN_WINDOW_NAME = "main";
 
 		static void Main(string[] args)
@@ -56,7 +56,7 @@ namespace CarDetection
 				Cv.CvtColor(previousOriginalFrame, previousGrayImage, ColorConversion.RgbToGray);
 
 				IplImage differenceBetweenFrames = Cv.CreateImage(currentGrayImage.Size, currentGrayImage.Depth, 1);
-				Cv.Sub(currentGrayImage, previousGrayImage, differenceBetweenFrames);
+				Cv.AbsDiff(previousGrayImage, currentGrayImage, differenceBetweenFrames);
 				Cv.Threshold(differenceBetweenFrames, differenceBetweenFrames, 10, 255, ThresholdType.Binary);
 				Cv.Erode(differenceBetweenFrames, differenceBetweenFrames);
 
