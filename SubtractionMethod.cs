@@ -9,7 +9,7 @@ namespace CarDetection
 		public const String FILE_NAME = "better_video.mp4";
 		public const String MAIN_WINDOW_NAME = "main";
 
-		static void Main(string[] args)
+		static void Main2(string[] args)
 		{
 			CvCapture videoCaprure = null;
 			try

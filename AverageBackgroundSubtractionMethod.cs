@@ -6,11 +6,11 @@ namespace CarDetection
 {
 	class AverageBackgroundSubtractionMethod
 	{
-		public const String FILE_NAME = "better_video.mp4";
-		public const String BACKDROUND_IMAGE_FILE_NAME = "background_image.jpg";
+		public const String FILE_NAME = "merged_day_small.avi";
+		public const String BACKDROUND_IMAGE_FILE_NAME = "background.bmp";
 		public const String MAIN_WINDOW_NAME = "main";
 
-		static void Main2(string[] args)
+		static void Main(string[] args)
 		{
 			CvCapture videoCaprure = null;
 			try
@@ -32,8 +32,13 @@ namespace CarDetection
 			//int counter = 0;
 
 			IplImage backgroundImage = IplImage.FromFile(BACKDROUND_IMAGE_FILE_NAME);
+			IplImage grayBackgroundImage = Cv.CreateImage(backgroundImage.Size, backgroundImage.Depth, 1);
+			Cv.CvtColor(backgroundImage, grayBackgroundImage, ColorConversion.RgbToGray);
+
+			Console.WriteLine("NChannels = " + backgroundImage.NChannels);
+			Console.ReadKey();
 			//IplImage grayBackgroundImage = Cv.CreateImage(backgroundImage.Size, backgroundImage.Depth, 1);
-			//Cv.CvtColor(backgroundImage, grayBackgroundImage, ColorConversion.RgbToGray);
+			//Cv.CvtColor(backgroundImage, grayBackgroundImage, ColorConversion.RgbToGray););
 
 			while(true)
 			{
@@ -45,29 +50,23 @@ namespace CarDetection
 				//if (counter % 3 != 0)
 				//    continue;
 
-				//algo
-				//IplImage currentGrayImage = Cv.CreateImage(currentOgirinalFrame.Size, currentOgirinalFrame.Depth, 1);
-				//Cv.CvtColor(currentOgirinalFrame, currentGrayImage, ColorConversion.RgbToGray);
+				IplImage grayOriginalFrame = Cv.CreateImage(currentOgirinalFrame.Size, currentOgirinalFrame.Depth, 1);
+				Cv.CvtColor(currentOgirinalFrame, grayOriginalFrame, ColorConversion.RgbToGray);
+				IplImage differenceBetweenFrames = Cv.CreateImage(grayOriginalFrame.Size, grayOriginalFrame.Depth, 1);
+
+				Cv.AbsDiff(grayOriginalFrame, grayBackgroundImage, differenceBetweenFrames);
+				//Cv.Smooth(differenceBetweenFrames, differenceBetweenFrames, SmoothType.Blur);
+				//IplImage graydifferenceBetweenFrames = Cv.CreateImage(differenceBetweenFrames.Size, differenceBetweenFrames.Depth, 1);
+				//Cv.CvtColor(differenceBetweenFrames, graydifferenceBetweenFrames, ColorConversion.RgbToGray);
+				//Cv.ShowImage("differenceBetweenFrames", differenceBetweenFrames);
 
 
+				Cv.Threshold(differenceBetweenFrames, differenceBetweenFrames, 50, 255, ThresholdType.Binary);
 
-
-
-				IplImage differenceBetweenFrames = Cv.CreateImage(currentOgirinalFrame.Size, currentOgirinalFrame.Depth, currentOgirinalFrame.NChannels);
-
-				Cv.AbsDiff(currentOgirinalFrame, backgroundImage, differenceBetweenFrames);
-				Cv.Smooth(differenceBetweenFrames, differenceBetweenFrames, SmoothType.Blur);
-				IplImage graydifferenceBetweenFrames = Cv.CreateImage(differenceBetweenFrames.Size, differenceBetweenFrames.Depth, 1);
-				Cv.CvtColor(differenceBetweenFrames, graydifferenceBetweenFrames, ColorConversion.RgbToGray);
-				Cv.ShowImage("differenceBetweenFrames", differenceBetweenFrames);
-
-					
-				Cv.Threshold(graydifferenceBetweenFrames, graydifferenceBetweenFrames, 50, 255, ThresholdType.Binary);
-				
-				Cv.Erode(graydifferenceBetweenFrames, graydifferenceBetweenFrames);
+				Cv.Erode(differenceBetweenFrames, differenceBetweenFrames);
 
 				//finding blobs
-				CvBlobs blobs = new CvBlobs(graydifferenceBetweenFrames);
+				CvBlobs blobs = new CvBlobs(differenceBetweenFrames);
 				blobs.FilterByArea(300, 10000);
 				//blobs.Label(differenceBetweenFrames);
 
@@ -81,9 +80,9 @@ namespace CarDetection
 				Console.WriteLine(blobs.Count);
 
 				Cv.ShowImage(MAIN_WINDOW_NAME, currentFrameWithRedRects);
-				Cv.ShowImage("Result", graydifferenceBetweenFrames);
+				Cv.ShowImage("Result", differenceBetweenFrames);
 				//Cv.ShowImage("backgroundImage", backgroundImage);
-				Cv.WaitKey(delay * 2);
+				Cv.WaitKey(delay);
 
 				//currentOgirinalFrame.Copy(differenceBetweenFrames);
 			}
